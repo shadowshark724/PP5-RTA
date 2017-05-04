@@ -179,12 +179,6 @@
       <Project>{984fbe71-c273-4941-9765-cd2010ca1989}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Assests\Bone.fbx">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </None>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
