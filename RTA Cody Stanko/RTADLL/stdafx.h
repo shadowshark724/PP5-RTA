@@ -11,8 +11,9 @@
 // Windows Header Files:
 #include <windows.h>
 #include <fbxsdk.h>
+#include <vector>
 
-
+using namespace std;
 
 
 // TODO: reference additional headers your program requires here

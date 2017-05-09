@@ -33,12 +33,18 @@
     <ClInclude Include="RTA Cody Stanko.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DirectXStuff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RTA Cody Stanko.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DirectXStuff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -54,5 +60,9 @@
     <Image Include="RTA Cody Stanko.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\RTADLL\PixelShader.hlsl" />
+    <FxCompile Include="..\RTADLL\VertexShader.hlsl" />
   </ItemGroup>
 </Project>
