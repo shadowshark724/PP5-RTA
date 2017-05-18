@@ -23,7 +23,9 @@ public:
 		ID3D11DepthStencilState * m_depthStencilState;
 		ID3D11DepthStencilView * m_depthStencilView;
 		ID3D11RasterizerState * m_rasterState;
+		ID3D11RasterizerState * d_rasterState;
 		ID3D11Buffer * m_buffer;
+		ID3D11Buffer * g_buffer;
 
 	}default_pipeline;
 
@@ -44,6 +46,13 @@ public:
 	{
 		DirectX::XMFLOAT4 Position;
 		DirectX::XMFLOAT4 Color;
+		DirectX::XMFLOAT4 Rotation;
+		DirectX::XMFLOAT4 Scale;
+	};
+
+	struct g_matrix
+	{
+		DirectX::XMFLOAT4X4 g_transform;
 	};
 
 	struct matrix
@@ -55,29 +64,39 @@ public:
 
 	pipeline_state_t m_pipelineState;
 	Attributes m_attribute;
+	pipeline_state_t b_pipelineState;
+	Attributes b_attribute;
 	matrix m_matrix;
 
-	ID3D11Buffer * m_bufferMatrix;
-	ID3D11Buffer * m_bufferXline;
-	ID3D11Buffer * m_bufferYline;
-	ID3D11Buffer * m_bufferZline;
+	//ID3D11Buffer * m_bonesBuffer;
+	
+	//ID3D11RasterizerState * m_rasterState;
+	//ID3D11RasterizerState * d_rasterState;
 
-	int * index = nullptr;
+	ID3D11Buffer * m_bufferMatrix;
+	//ID3D11Buffer * m_bufferXline;
+	//ID3D11Buffer * m_bufferYline;
+	//ID3D11Buffer * m_bufferZline;
+
+	std::vector<int> index;// = nullptr;
+
+	ID3D11Debug * debugthis;
 
 	UINT thig;
 
-	vertex * vertsIn = nullptr;
+	std::vector<vertex> vertsIn;// = nullptr;
+	std::vector<vertex> grid;
 	std::vector<vertex> bonesHere;
+	std::vector<vertex> bonetemp;
+	std::vector<std::vector<vertex>> boneanims;
 	bool bonesOn = true;
-	int boneSize = 0;
+	bool update = false;
+	int animFrame = 0;
 
-
-	int vSize;
+	//int vSize;
 
 	float camrotX = 0, camrotY = 0;
 	vertex cameraPos;
-
-	std::vector<vertex> bones;
 
 	void Start(HWND window, int width, int height);
 	void Render();
@@ -85,7 +104,8 @@ public:
 	//int SetThings(int * index, float _vert0, float _vert1, float _vert2, float _vert3);
 	void SetUpShader();
 	void BufferTriangle();
+	void UpdateBones();
 	void SetCamera();
-	void Randomize();
-	void DrawTriangle();
+	//void Randomize();
+	//void DrawTriangle();
 };
