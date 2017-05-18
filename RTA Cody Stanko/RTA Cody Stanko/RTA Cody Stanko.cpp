@@ -246,7 +246,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		
 		if (timeon == true)
 		{
-			float ltime = temp_clip.frames[temp_clip.frames.size()-1].time;
+			float ltime = temp_clip.frames[temp_clip.frames.size() - 1].time;
 
 			float mtime = fmod(time, ltime);
 
@@ -281,8 +281,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				RTA::Vertex temp1, temp2;
 				DirectXStuff::vertex temp3;
 				temp1 = temp_clip.frames[prevFrame].joints[i];
-				temp2 = temp_clip.frames[frame].joints[i];		
-				
+				temp2 = temp_clip.frames[frame].joints[i];
+
 				temp3.Position.x = (temp2.xyzw[0] - temp1.xyzw[0])*ratio + temp1.xyzw[0];
 				temp3.Position.y = (temp2.xyzw[1] - temp1.xyzw[1])*ratio + temp1.xyzw[1];
 				temp3.Position.z = (temp2.xyzw[2] - temp1.xyzw[2])*ratio + temp1.xyzw[2];
@@ -290,7 +290,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				temp3.Color = { 1.0f,0.0f,1.0f,1.0f };
 				Direct.bonetemp.push_back(temp3);
 			}
-
+		}
 		if (fpsupdate < time)
 		{
 			fpsupdate = time + 1;
@@ -301,6 +301,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		if (GetAsyncKeyState('T') & 0x001)
 		{	
 			timeon = !timeon;
+			if (timeon == false)
+			{
+				Direct.bonetemp.clear();
+				for (int i = 0; i < temp_clip.frames[bonemove].joints.size(); i++)
+				{
+					DirectXStuff::vertex temp;
+					temp.Position.x = temp_clip.frames[bonemove].joints[i].xyzw[0];
+					temp.Position.y = temp_clip.frames[bonemove].joints[i].xyzw[1];
+					temp.Position.z = temp_clip.frames[bonemove].joints[i].xyzw[2];
+					temp.Position.w = 1.0f;
+					temp.Color = { 1.0f,1.0f,0.0f,0.0f };
+					Direct.bonetemp.push_back(temp);
+				}
+			}
 		}
 		if (GetAsyncKeyState('R') & 0x001)
 		{
@@ -332,9 +346,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			//Direct.animFrame = bonemove;
 			Direct.update = true;
 //FbxToDirect();
-		}
+		
 
-		if (GetAsyncKeyState(VK_LEFT) && timeon == false)
+		if (GetAsyncKeyState(VK_LEFT) & 0x001 && timeon == false)
 		{
 		if (bonemove - 1 < 0)
 		{
@@ -342,11 +356,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 		else
 			bonemove--;
-		Direct.animFrame = bonemove;
+		Direct.bonetemp.clear();
+		for (int i = 0; i < temp_clip.frames[bonemove].joints.size(); i++)
+		{
+			DirectXStuff::vertex temp;
+			temp.Position.x = temp_clip.frames[bonemove].joints[i].xyzw[0];
+			temp.Position.y = temp_clip.frames[bonemove].joints[i].xyzw[1];
+			temp.Position.z = temp_clip.frames[bonemove].joints[i].xyzw[2];
+			temp.Position.w = 1.0f;
+			temp.Color = { 1.0f,1.0f,0.0f,0.0f };
+			Direct.bonetemp.push_back(temp);
+		}
 		Direct.update = true;
 		//FbxToDirect();
 		}
-		if (GetAsyncKeyState(VK_RIGHT) && timeon == false)
+		if (GetAsyncKeyState(VK_RIGHT) & 0x001 && timeon == false)
 		{
 			if (bonemove + 1 == stuff.getAnim().frames.size())
 			{
@@ -354,7 +378,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			}
 			else
 				bonemove++;
-			Direct.animFrame = bonemove;
+			Direct.bonetemp.clear();
+			for (int i = 0; i < temp_clip.frames[bonemove].joints.size(); i++)
+			{
+				DirectXStuff::vertex temp;
+				temp.Position.x = temp_clip.frames[bonemove].joints[i].xyzw[0];
+				temp.Position.y = temp_clip.frames[bonemove].joints[i].xyzw[1];
+				temp.Position.z = temp_clip.frames[bonemove].joints[i].xyzw[2];
+				temp.Position.w = 1.0f;
+				temp.Color = { 1.0f,1.0f,0.0f,0.0f };
+				Direct.bonetemp.push_back(temp);
+			}
 			Direct.update = true;
 		//	FbxToDirect();
 		}
