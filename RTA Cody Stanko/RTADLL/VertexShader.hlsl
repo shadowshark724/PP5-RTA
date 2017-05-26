@@ -9,15 +9,17 @@ struct VertOut
 {
 	float4 position : SV_POSITION;
 	float4 color : COLOR;
+	//float4 norm : NORMAL;
 };
 
 struct VertIn
 {
 	float4 position : POSITION;
 	float4 color : COLOR;
+	//float4 norm : NORMAL;
 };
 
-VertOut main( VertIn input )
+VertOut main(VertIn input)
 {
 	VertOut output;
 

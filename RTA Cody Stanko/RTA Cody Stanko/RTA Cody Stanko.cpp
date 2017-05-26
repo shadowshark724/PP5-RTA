@@ -72,6 +72,7 @@ int FbxToDirect()
 	//Direct.vertsIn.resize((vSize * 2) + 44 + stuff.getBones().size()); //= new DirectXStuff::vertex[(vSize*2)+44+ stuff.getBones().size()];
 	//RTA::Vertex * fbxVert = stuff.getVertex();
 	std::vector<DirectXStuff::vertex> temps;// = new DirectXStuff::vertex[vSize];
+	Direct.index = stuff.getIndex();
 	//Direct.vertsIn = new DirectXStuff::vertex[vSize];
 	
 	for (int i = 0; i < 11; i++)
@@ -108,10 +109,14 @@ int FbxToDirect()
 			temp.Position.y = rvert[i].xyzw[1];
 			temp.Position.z = rvert[i].xyzw[2];
 			temp.Position.w = 1.0f;
-			temp.Color.x = .50f;
-			temp.Color.y = 0.0f;
-			temp.Color.z = 0.0f;
-			temp.Color.w = 1.0f;
+			temp.Color.x = rvert[i].color[0];
+			temp.Color.y = rvert[i].color[1];
+			temp.Color.z = rvert[i].color[2];
+			temp.Color.w = rvert[i].color[3];
+			temp.Normal.x = rvert[i].norm[0];
+			temp.Normal.y = rvert[i].norm[1];
+			temp.Normal.z = rvert[i].norm[2];
+			temp.Normal.w = rvert[i].norm[3];
 			Direct.vertsIn.push_back(temp);
 			//temps.push_back(temp);
 		//	printf("Debug here - %0.2f, %0.2f, %0.2f\n", Direct.vertsIn[i].Position.x, Direct.vertsIn[i].Position.y, Direct.vertsIn[i].Position.z);
@@ -287,7 +292,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				temp3.Position.y = (temp2.xyzw[1] - temp1.xyzw[1])*ratio + temp1.xyzw[1];
 				temp3.Position.z = (temp2.xyzw[2] - temp1.xyzw[2])*ratio + temp1.xyzw[2];
 				temp3.Position.w = 1.0f;
-				temp3.Color = { 1.0f,0.0f,1.0f,1.0f };
+				temp3.Color = { 1.0f,1.0f,0.0f,1.0f };
 				Direct.bonetemp.push_back(temp3);
 			}
 		}
@@ -311,7 +316,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 					temp.Position.y = temp_clip.frames[bonemove].joints[i].xyzw[1];
 					temp.Position.z = temp_clip.frames[bonemove].joints[i].xyzw[2];
 					temp.Position.w = 1.0f;
-					temp.Color = { 1.0f,1.0f,0.0f,0.0f };
+					temp.Color = { 1.0f,0.0f,0.0f,0.0f };
 					Direct.bonetemp.push_back(temp);
 				}
 			}

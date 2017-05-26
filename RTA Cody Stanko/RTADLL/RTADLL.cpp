@@ -59,6 +59,8 @@ namespace RTA
 	void loadData(FbxNode * _Node)
 	{
 		FbxMesh * meshData = _Node->GetMesh();
+		
+		
 
 		// verts from here
 		//meshData->GetControlPoints()
@@ -67,19 +69,10 @@ namespace RTA
 
 		//printf("Poly Count = %i", polys);
 		//printf("Current index:");
-		int indCount = 0;
-		for (int j = 0; j < polys; j++)
-		{
-			for (int k = 0; k < 3; k++)
-			{
-				indicies.push_back(meshData->GetPolygonVertex(j, k));
-			//	printf("%d ,", indicies[j + k]);
-				indCount++;
-			}
-		}
+		
 		
 
-		printf(" count of index = %d", indCount);
+		//printf(" count of index = %d", indCount);
 
 		int count = meshData->GetControlPointsCount();
 		printf("Control points = %i", count);
@@ -90,25 +83,58 @@ namespace RTA
 			fbxsdk::FbxVector4 holdthings;
 			Vertex temp;
 			holdthings = meshData->GetControlPointAt(i);
-
+			
 			temp.xyzw[0] = holdthings.mData[0];
 			temp.xyzw[1] = holdthings.mData[1];
 			temp.xyzw[2] = holdthings.mData[2];
 			temp.xyzw[3] = holdthings.mData[3];
-			verts.push_back(temp);
+			stuff.push_back(temp);
 		//	printf("\npos - (%f, %f, %f, %f)", verts[i].xyzw[0], verts[i].xyzw[1], verts[i].xyzw[2], verts[i].xyzw[3]);
 			//verts[i]
 		}
 
 		//stuff = new Vertex[polys * 3];
+		FbxStringList uvlist;
+		meshData->GetUVSetNames(uvlist);
 
-		for (int j = 0; j < polys * 3; j++)
+
+		//  indicies here and uvs
+		int indCount = 0;
+		for (int j = 0; j < polys; j++)
 		{
-			stuff.push_back(verts[indicies[j]]);
-		}
-		// norms uvs here
-		//vertexSize = indCount;
+			for (int k = 0; k < 3; k++)
+			{
+				indicies.push_back(meshData->GetPolygonVertex(j, k));
+				//	printf("%d ,", indicies[j + k]);
 
+				//Vertex temp = stuff[meshData->GetPolygonVertex(j, k)];
+
+
+				// grab uvs here
+				FbxVector2 uv;
+				FbxVector4 norm;
+				bool map;
+
+				if (meshData->GetPolygonVertexUV(j, k, uvlist.GetStringAt(0), uv, map))
+				{
+					stuff[meshData->GetPolygonVertex(j, k)].color[0] = uv[1];
+					stuff[meshData->GetPolygonVertex(j, k)].color[1] = uv[0];
+					stuff[meshData->GetPolygonVertex(j, k)].color[2] = 0.0f;
+					stuff[meshData->GetPolygonVertex(j, k)].color[3] = 1.0f;
+				}
+				// load normals here
+				if (meshData->GetPolygonVertexNormal(j, k, norm))
+				{
+					stuff[meshData->GetPolygonVertex(j, k)].norm[0] = norm[0];
+					stuff[meshData->GetPolygonVertex(j, k)].norm[1] = norm[1];
+					stuff[meshData->GetPolygonVertex(j, k)].norm[2] = norm[2];
+					stuff[meshData->GetPolygonVertex(j, k)].norm[3] = norm[3];
+				}
+				//stuff.push_back(temp);
+
+				indCount++;
+			}
+		}
 	}
 
 	void LimbLoad(FbxNode * _Node, Vertex curr, Keyframe* key, FbxTime timeDur)
@@ -120,10 +146,16 @@ namespace RTA
 			FbxDouble4 glob = _Node->GetChild(i)->EvaluateGlobalTransform(timeDur).GetT();
 			FbxDouble4 rot = _Node->GetChild(i)->EvaluateGlobalTransform(timeDur).GetR();
 			FbxDouble4 scale = _Node->GetChild(i)->EvaluateGlobalTransform(timeDur).GetS();
-			//parent.xyzw[0] = trans[0] + curr.xyzw[0];
-			//parent.xyzw[1] = trans[1] + curr.xyzw[1];
-			//parent.xyzw[2] = trans[2] + curr.xyzw[2];
-			//parent.xyzw[3] = 1.0f;
+			//FbxDouble4x4 tansform = _Node->GetChild(i)->EvaluateGlobalTransform(timeDur).get;
+
+			for (int r = 0; r < 4; r++)
+			{
+				for (int c = 0; c < 4; c++)
+				{
+					parent.matrixT[r * 4 + c] = _Node->GetChild(i)->EvaluateGlobalTransform(timeDur).Get(r, c);
+				}
+			}
+			
 			parent.xyzw[0] = glob[0];
 			parent.xyzw[1] = glob[1];
 			parent.xyzw[2] = glob[2];
@@ -160,11 +192,6 @@ namespace RTA
 		FbxDouble3 rotation = _Node->LclRotation.Get();
 		FbxDouble3 scaling = _Node->LclScaling.Get();
 
-		FbxDouble4 global1 = _Node->EvaluateGlobalTransform().GetT();
-		FbxDouble4 global2 = _Node->EvaluateGlobalTransform().GetR();
-		FbxDouble4 global3 = _Node->EvaluateGlobalTransform().GetQ();
-		FbxDouble4 global4 = _Node->EvaluateGlobalTransform()[3];
-
 		if (testAtt == "mesh")
 		{
 			printf("<node name = '%s'  type = '%s' translation = '(%0.2f, %0.2f, %0.2f)' rotation = '(%0.2f, %0.2f, %0.2f)' scaling = '(%0.2f, %0.2f, %0.2f)'>\n",
@@ -188,6 +215,7 @@ namespace RTA
 #pragma region loadani
 
 			
+			
 			if (animation_clip.frames.size() == 0)
 			{
 				FbxAnimStack * stack = _Node->GetScene()->GetCurrentAnimationStack();
@@ -199,7 +227,6 @@ namespace RTA
 				{
 					Keyframe tempframe;
 					timeDur.SetFrame(i, FbxTime::EMode::eFrames24);
-					//FbxTime frametime = transCurve->KeyGetCount();
 					tempframe.time = timeDur.GetSecondDouble();
 
 					Vertex hold;
@@ -208,14 +235,18 @@ namespace RTA
 					FbxDouble4 rot = _Node->EvaluateGlobalTransform(timeDur).GetR();
 					FbxDouble4 scale = _Node->EvaluateGlobalTransform(timeDur).GetS();
 
-					/*hold.xyzw[0] = trans[0];
-					hold.xyzw[1] = trans[1];
-					hold.xyzw[2] = trans[2];
-					hold.xyzw[3] = 1.0f;*/
+					for (int r = 0; r < 4; r++)
+					{
+						for (int c = 0; c < 4; c++)
+						{
+							hold.matrixT[r * 4 + c] = _Node->EvaluateGlobalTransform(timeDur).Get(r, c);
+						}
+					}
+					
 					hold.xyzw[0] = glob[0];
 					hold.xyzw[1] = glob[1];
 					hold.xyzw[2] = glob[2];
-					hold.xyzw[3] = 1.0f;//glob[3];
+					hold.xyzw[3] = 1.0f;
 
 					hold.rotation[0] = rot[0];
 					hold.rotation[1] = rot[1];
@@ -226,7 +257,7 @@ namespace RTA
 					hold.scale[1] = scale[1];
 					hold.scale[2] = scale[2];
 					hold.scale[3] = scale[3];
-					//bones.push_back(hold);
+					
 					for (int j = 0; j < _Node->GetChildCount(); j++)
 					{
 						printf("\nDebug here2 %s = %0.4f, %0.4f, %0.4f", _Node->GetName(), hold.xyzw[0], hold.xyzw[1], hold.xyzw[2]);
@@ -238,15 +269,18 @@ namespace RTA
 						rot = _Node->GetChild(j)->EvaluateGlobalTransform(timeDur).GetR();
 						scale = _Node->GetChild(j)->EvaluateGlobalTransform(timeDur).GetS();
 
-						/*temp.xyzw[0] = trans[0] + hold.xyzw[0];
-						temp.xyzw[1] = trans[1] + hold.xyzw[1];
-						temp.xyzw[2] = trans[2] + hold.xyzw[2];
-						temp.xyzw[3] = 1.0f;*/
-
+						for (int r = 0; r < 4; r++)
+						{
+							for (int c = 0; c < 4; c++)
+							{
+								temp.matrixT[r * 4 + c] = _Node->GetChild(j)->EvaluateGlobalTransform(timeDur).Get(r, c);
+							}
+						}
+						
 						temp.xyzw[0] = glob[0];
 						temp.xyzw[1] = glob[1];
 						temp.xyzw[2] = glob[2];
-						temp.xyzw[3] = 1.0f;// glob[3];
+						temp.xyzw[3] = 1.0f;
 
 						temp.rotation[0] = rot[0];
 						temp.rotation[1] = rot[1];
@@ -261,13 +295,31 @@ namespace RTA
 						//printf("\nDebug here2 %s = %0.4f, %0.4f, %0.4f", nodeName,temp.xyzw[0], temp.xyzw[1], temp.xyzw[2]);
 						tempframe.joints.push_back(temp);
 						LimbLoad(_Node->GetChild(j), temp, &tempframe, timeDur);
-						//bones.push_back(hold);
+						
 					}
 
 
 
 					animation_clip.frames.push_back(tempframe);
 				}
+				//FbxMesh * meshData = meshNode->GetMesh();
+				
+				/*if (meshData->GetDeformer(0)->GetDeformerType() == meshData->GetDeformer(0)->eSkin)
+				{
+					FbxSkin * skin = (FbxSkin *)meshData->GetDeformer(0, FbxDeformer::eSkin);
+					int skincount = skin->GetClusterCount();
+					for (int c = 0; c < skincount; c++)
+					{
+						FbxCluster * clust = skin->GetCluster(c);
+						FbxNode * tnode = clust->GetLink();
+						for (int f = 0; f < animation_clip.frames.size(); f++)
+						{
+							for (int b = 0; b < animation_clip.frames[f].joints.size(); b++)
+							{
+							}
+						}
+					}
+				}*/
 			}
 #pragma endregion
 

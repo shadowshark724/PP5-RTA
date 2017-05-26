@@ -18,7 +18,8 @@
 #include <tchar.h>
 #include <iostream>
 #include <chrono>
-
+#include <d2d1.h>
+#include "WICTextureLoader.h"
 
 
 // TODO: reference additional headers your program requires here

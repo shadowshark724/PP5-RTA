@@ -12,10 +12,14 @@ namespace RTA
 {
 	struct Vertex
 	{
+		
 		float xyzw[4];
 		float rotation[4];
 		float scale[4];
+		float matrixT[16];
 		float color[4];
+		float norm[4];
+		std::vector<float> weights;
 	};
 
 	struct Keyframe
@@ -33,6 +37,7 @@ namespace RTA
 	std::vector<int> indicies;// = nullptr;
 	std::vector<Vertex> verts;// = nullptr;
 	std::vector<Vertex> stuff;// = nullptr;
+	
 	//int indexSize = 0;
 	//int vertexSize = 0;
 	
@@ -49,6 +54,7 @@ namespace RTA
 		//static RTADLL_API void deletestuff();
 		static RTADLL_API void initFBX();
 	
+		
 		RTADLL_API std::vector<int> getIndex() { return indicies; }
 		RTADLL_API std::vector<Vertex> getVertex() { return stuff; }
 		//RTADLL_API int getIndexSize() { return indexSize; }

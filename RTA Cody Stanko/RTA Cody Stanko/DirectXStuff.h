@@ -6,6 +6,8 @@
 #include "VertexShader.csh"
 #include "PixelShader.csh"
 #include <vector>
+#include "WICTextureLoader.h"
+
 
 class DirectXStuff
 {
@@ -25,6 +27,7 @@ public:
 		ID3D11RasterizerState * m_rasterState;
 		ID3D11RasterizerState * d_rasterState;
 		ID3D11Buffer * m_buffer;
+		ID3D11Buffer * m_indBuffer;
 		ID3D11Buffer * g_buffer;
 
 	}default_pipeline;
@@ -36,16 +39,19 @@ public:
 		ID3D11DeviceContext * m_devicecontext;
 		IDXGISwapChain * m_swapchain;
 		ID3D11RenderTargetView * m_rendertarget;
+		ID3D11Resource * m_resource;
+		ID3D11ShaderResourceView * m_shaderResource;
+		ID3D11SamplerState * m_sampler;
 		D3D_DRIVER_TYPE m_drivertype;
 		D3D_FEATURE_LEVEL m_featurelevels;
 		D3D11_VIEWPORT m_viewport;
-
 	};
 
 	struct vertex
 	{
 		DirectX::XMFLOAT4 Position;
 		DirectX::XMFLOAT4 Color;
+		DirectX::XMFLOAT4 Normal;
 		DirectX::XMFLOAT4 Rotation;
 		DirectX::XMFLOAT4 Scale;
 	};
@@ -62,6 +68,8 @@ public:
 		DirectX::XMFLOAT4X4 world;
 	};
 
+	
+	ID3D11Texture2D * texture;
 	pipeline_state_t m_pipelineState;
 	Attributes m_attribute;
 	pipeline_state_t b_pipelineState;

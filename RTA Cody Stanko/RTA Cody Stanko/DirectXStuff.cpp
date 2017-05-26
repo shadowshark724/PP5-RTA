@@ -13,11 +13,16 @@ DirectXStuff::DirectXStuff()
 	m_pipelineState.m_pixelshader = nullptr;
 	m_pipelineState.m_buffer = nullptr;
 	m_pipelineState.g_buffer = nullptr;
+	m_pipelineState.m_indBuffer = nullptr;
+	m_pipelineState.m_inputlayout = nullptr;
 
 	m_attribute.m_device = nullptr;
 	m_attribute.m_devicecontext = nullptr;
 	m_attribute.m_rendertarget = nullptr;
 	m_attribute.m_swapchain = nullptr;
+	m_attribute.m_sampler = nullptr;
+	m_attribute.m_resource = nullptr;
+	m_attribute.m_shaderResource = nullptr;
 	b_attribute = m_attribute;
 	b_pipelineState = m_pipelineState;
 
@@ -57,6 +62,9 @@ DirectXStuff::~DirectXStuff()
 	if (m_pipelineState.g_buffer != nullptr)
 		m_pipelineState.g_buffer->Release();
 
+	if (m_pipelineState.m_indBuffer != nullptr)
+		m_pipelineState.m_indBuffer->Release();
+
 	if (m_attribute.m_device != nullptr)
 		m_attribute.m_device->Release();
 
@@ -68,6 +76,15 @@ DirectXStuff::~DirectXStuff()
 
 	if (m_attribute.m_swapchain != nullptr)
 		m_attribute.m_swapchain->Release();
+
+	if (m_attribute.m_sampler != nullptr)
+		m_attribute.m_sampler->Release();
+
+	if (m_attribute.m_shaderResource != nullptr)
+		m_attribute.m_shaderResource->Release();
+
+	if (m_attribute.m_resource != nullptr)
+		m_attribute.m_resource->Release();
 
 	if (b_pipelineState.m_vertexshader != nullptr)
 		b_pipelineState.m_vertexshader->Release();
@@ -95,6 +112,9 @@ DirectXStuff::~DirectXStuff()
 
 	if (b_pipelineState.g_buffer != nullptr)
 		b_pipelineState.g_buffer->Release();
+
+	if (b_pipelineState.m_indBuffer != nullptr)
+		b_pipelineState.m_indBuffer->Release();
 
 	if (m_bufferMatrix != nullptr)
 		m_bufferMatrix->Release();
@@ -180,6 +200,7 @@ void DirectXStuff::Start(HWND window, int width, int height)
 
 	D3D11_RASTERIZER_DESC desc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT());
 	desc.FillMode = D3D11_FILL_SOLID;
+
 	m_attribute.m_device->CreateRasterizerState(&desc, &m_pipelineState.m_rasterState);
 	desc.FillMode = D3D11_FILL_WIREFRAME;
 	m_attribute.m_device->CreateRasterizerState(&desc, &m_pipelineState.d_rasterState);
@@ -197,30 +218,12 @@ void DirectXStuff::Start(HWND window, int width, int height)
 
 void DirectXStuff::Render()
 {
-
+	m_attribute.m_devicecontext->ClearRenderTargetView(m_attribute.m_rendertarget, DirectX::Colors::Black);
 	if (update == true)
 	{
 		UpdateBones();
 	}
-	if (bonesOn)
-		m_attribute.m_devicecontext->RSSetState(m_pipelineState.d_rasterState);
-	else
-		m_attribute.m_devicecontext->RSSetState(m_pipelineState.m_rasterState);
-
-	m_attribute.m_devicecontext->UpdateSubresource(m_bufferMatrix, 0, NULL, &m_matrix, 0, 0);
-	m_attribute.m_devicecontext->VSSetConstantBuffers(0, 1, &m_bufferMatrix);
-	m_attribute.m_devicecontext->ClearRenderTargetView(m_attribute.m_rendertarget, DirectX::Colors::Black);
 	
-	m_attribute.m_devicecontext->PSSetShader(m_pipelineState.m_pixelshader, NULL, 0);
-	m_attribute.m_devicecontext->VSSetShader(m_pipelineState.m_vertexshader, NULL, 0);
-
-	UINT stride = sizeof(vertex);
-	UINT offset = 0;
-	m_attribute.m_devicecontext->IASetVertexBuffers(0, 1, &m_pipelineState.m_buffer, &stride, &offset);
-
-	m_attribute.m_devicecontext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	m_attribute.m_devicecontext->Draw(vertsIn.size(), 0);
 
 	b_attribute.m_devicecontext->UpdateSubresource(m_bufferMatrix, 0, NULL, &m_matrix, 0, 0);
 	b_attribute.m_devicecontext->VSSetConstantBuffers(0, 1, &m_bufferMatrix);
@@ -228,8 +231,8 @@ void DirectXStuff::Render()
 	b_attribute.m_devicecontext->PSSetShader(b_pipelineState.m_pixelshader, NULL, 0);
 	b_attribute.m_devicecontext->VSSetShader(b_pipelineState.m_vertexshader, NULL, 0);
 
-	stride = sizeof(vertex);
-	offset = 0;
+	UINT stride = sizeof(vertex);
+	UINT offset = 0;
 	b_attribute.m_devicecontext->IASetVertexBuffers(0, 1, &b_pipelineState.g_buffer, &stride, &offset);
 
 	b_attribute.m_devicecontext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -252,6 +255,32 @@ void DirectXStuff::Render()
 		
 		b_attribute.m_devicecontext->Draw(bonesHere.size(), 0);
 	}
+
+	if (bonesOn)
+		m_attribute.m_devicecontext->RSSetState(m_pipelineState.d_rasterState);
+	else
+		m_attribute.m_devicecontext->RSSetState(m_pipelineState.m_rasterState);
+
+	m_attribute.m_devicecontext->UpdateSubresource(m_bufferMatrix, 0, NULL, &m_matrix, 0, 0);
+	m_attribute.m_devicecontext->VSSetConstantBuffers(0, 1, &m_bufferMatrix);
+	
+
+	m_attribute.m_devicecontext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_attribute.m_devicecontext->PSSetShader(m_pipelineState.m_pixelshader, NULL, 0);
+	m_attribute.m_devicecontext->VSSetShader(m_pipelineState.m_vertexshader, NULL, 0);
+
+	stride = sizeof(vertex);
+	offset = 0;
+	m_attribute.m_devicecontext->IASetVertexBuffers(0, 1, &m_pipelineState.m_buffer, &stride, &offset);
+
+	m_attribute.m_devicecontext->IASetIndexBuffer(m_pipelineState.m_indBuffer, DXGI_FORMAT_R32_UINT, 0);
+	m_attribute.m_devicecontext->IASetInputLayout(m_pipelineState.m_inputlayout);
+
+	m_attribute.m_devicecontext->PSSetShaderResources(0, 1, &m_attribute.m_shaderResource);
+	m_attribute.m_devicecontext->PSSetSamplers(0, 1, &m_attribute.m_sampler);
+
+	m_attribute.m_devicecontext->DrawIndexed(index.size(),0, 0);
+
 	m_attribute.m_swapchain->Present(0, 0);
 }
 
@@ -323,8 +352,9 @@ void DirectXStuff::SetUpShader()
 
 	D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		//{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	m_attribute.m_device->CreateInputLayout(ied, 2, VertexShader, sizeof(VertexShader), &m_pipelineState.m_inputlayout);
@@ -333,7 +363,13 @@ void DirectXStuff::SetUpShader()
 	b_attribute.m_device->CreatePixelShader(PixelShader, sizeof(PixelShader), NULL, &b_pipelineState.m_pixelshader);
 	b_attribute.m_device->CreateVertexShader(VertexShader, sizeof(VertexShader), NULL, &b_pipelineState.m_vertexshader);
 
-	b_attribute.m_device->CreateInputLayout(ied, 2, VertexShader, sizeof(VertexShader), &b_pipelineState.m_inputlayout);
+	D3D11_INPUT_ELEMENT_DESC ied2[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	b_attribute.m_device->CreateInputLayout(ied2, 2, VertexShader, sizeof(VertexShader), &b_pipelineState.m_inputlayout);
 	b_attribute.m_devicecontext->IASetInputLayout(b_pipelineState.m_inputlayout);
 }
 
@@ -349,15 +385,55 @@ void DirectXStuff::BufferTriangle()
 		bufDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		bufDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
+		D3D11_SAMPLER_DESC textsample_desc;
+		ZeroMemory(&textsample_desc, sizeof(textsample_desc));
+		textsample_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		textsample_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		textsample_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		textsample_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+		m_attribute.m_device->CreateSamplerState(&textsample_desc, &m_attribute.m_sampler);
+		
+		DirectX::CreateWICTextureFromFile(m_attribute.m_device, m_attribute.m_devicecontext, L"Teddy_D.png", NULL, &m_attribute.m_shaderResource);
+
 		m_attribute.m_device->CreateBuffer(&bufDesc, NULL, &m_pipelineState.m_buffer);
 
-		D3D11_MAPPED_SUBRESOURCE mapSub;
-		m_attribute.m_devicecontext->Map(m_pipelineState.m_buffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mapSub);
-		memcpy(mapSub.pData, &vertsIn[0], vertsIn.size() *  sizeof(vertex));
-		m_attribute.m_devicecontext->Unmap(m_pipelineState.m_buffer, NULL);
+		//D3D11_MAPPED_SUBRESOURCE mapSub;
+		//m_attribute.m_devicecontext->Map(m_pipelineState.m_buffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mapSub);
+		//memcpy(mapSub.pData, &vertsIn[0], vertsIn.size() *  sizeof(vertex));
+		//m_attribute.m_devicecontext->Unmap(m_pipelineState.m_buffer, NULL);
+
+		D3D11_SUBRESOURCE_DATA vertBuffData = { 0 };
+		vertBuffData.pSysMem = &vertsIn[0];
+		vertBuffData.SysMemPitch = 0;
+		vertBuffData.SysMemSlicePitch = 0;
+		CD3D11_BUFFER_DESC bdmv(sizeof(vertex)*vertsIn.size(), D3D11_BIND_VERTEX_BUFFER);
+		m_attribute.m_device->CreateBuffer(&bdmv, &vertBuffData, &m_pipelineState.m_buffer);
 
 		CD3D11_BUFFER_DESC bdm(sizeof(m_matrix), D3D11_BIND_CONSTANT_BUFFER);
 		m_attribute.m_device->CreateBuffer(&bdm, NULL, &m_bufferMatrix);
+
+		D3D11_BUFFER_DESC bufInd;
+		ZeroMemory(&bufInd, sizeof(bufInd));
+
+		bufInd.Usage = D3D11_USAGE_DYNAMIC;
+		bufInd.ByteWidth = sizeof(int)*index.size();
+		bufInd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bufInd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		m_attribute.m_device->CreateBuffer(&bufInd, NULL, &m_pipelineState.m_indBuffer);
+
+		//D3D11_MAPPED_SUBRESOURCE inmapSub;
+		//m_attribute.m_devicecontext->Map(m_pipelineState.m_indBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &inmapSub);
+		//memcpy(inmapSub.pData, &index[0], index.size() * sizeof(int));
+		//m_attribute.m_devicecontext->Unmap(m_pipelineState.m_indBuffer, NULL);
+		
+		D3D11_SUBRESOURCE_DATA indBuffData = { 0 };
+		indBuffData.pSysMem = &index[0];
+		indBuffData.SysMemPitch = 0;
+		indBuffData.SysMemSlicePitch = 0;
+		CD3D11_BUFFER_DESC bdmi(sizeof(int)*index.size(), D3D11_BIND_INDEX_BUFFER);
+		m_attribute.m_device->CreateBuffer(&bdmi, &indBuffData, &m_pipelineState.m_indBuffer);
 	}
 
 	if (grid.size() > 0)
